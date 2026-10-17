@@ -1,0 +1,20 @@
+services:
+  mongo:
+    image: mongo:7
+    volumes: ["mongodata:/data/db"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  app:
+    build: .
+    ports: ["3000:3000"]
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/incident_tracker
+      TOKENS: "admin-token:admin,dev-token:developer,view-token:viewer"
+      GITHUB_WEBHOOK_SECRET: ""
+    depends_on:
+      mongo: { condition: service_healthy }
+volumes:
+  mongodata: {}

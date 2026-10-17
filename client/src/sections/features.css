@@ -1,0 +1,37 @@
+/* Artwork for the feature cards. Built on MagicBento's own tile/well surfaces. */
+.fv-suspects { display: flex; flex-direction: column; gap: 8px; padding: 12px; }
+.fv-suspect { display: flex; align-items: center; gap: 12px; padding: 10px 12px; }
+.fv-score { min-width: 2ch; font: 700 22px/1 var(--display); letter-spacing: -0.02em; }
+.fv-suspect:first-child .fv-score { color: var(--ember); }
+.fv-suspect-copy { display: flex; flex-direction: column; min-width: 0; }
+.fv-suspect-version { font-weight: 600; font-size: 13px; }
+.fv-suspect-why { color: var(--mb-muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.fv-merged { display: flex; align-items: baseline; gap: 8px; }
+.fv-merged b { font: 700 34px/1 var(--display); letter-spacing: -0.03em; }
+.fv-merged span { color: var(--mb-muted); font-size: 12.5px; }
+
+.fv-live { display: flex; align-items: center; gap: 10px; color: var(--mb-muted); font-size: 12.5px; }
+.fv-live i { width: 8px; height: 8px; border-radius: 50%; background: #3ddc97; box-shadow: 0 0 0 4px rgba(61, 220, 151, 0.18); }
+@media (prefers-reduced-motion: no-preference) {
+  .fv-live i { animation: fv-pulse 2s ease-in-out infinite; }
+}
+@keyframes fv-pulse { 50% { box-shadow: 0 0 0 7px rgba(61, 220, 151, 0); } }
+
+.fv-late { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.fv-late-line { position: relative; display: flex; justify-content: space-between; align-items: center; }
+.fv-late-line::before { content: ''; position: absolute; left: 4px; right: 4px; top: 50%; height: 1px; background: var(--mb-line); }
+.fv-late-dot { position: relative; width: 9px; height: 9px; border-radius: 50%; background: var(--mb-muted); }
+.fv-late-dot--flag { background: var(--ember); box-shadow: 0 0 0 4px rgba(255, 106, 61, 0.2); }
+.fv-late-labels { display: flex; justify-content: space-between; gap: 8px; font-size: 11.5px; color: var(--mb-muted); }
+.fv-late-labels span:nth-child(2) { color: var(--mb-ink); text-align: center; }
+
+.fv-conflict { display: flex; flex-direction: column; gap: 8px; }
+.fv-conflict-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-size: 12.5px; }
+.fv-conflict-row b { font-variant-numeric: tabular-nums; }
+.fv-conflict-row:first-child b { color: var(--ember); }
+.fv-conflict-row:last-child b { color: #3ddc97; }
+
+.fv-roles { display: flex; gap: 8px; flex-wrap: wrap; }
+.fv-role { padding: 7px 12px; font-size: 12.5px; font-weight: 500; }
+.fv-role[data-level='2'] { color: var(--signal); }

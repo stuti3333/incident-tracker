@@ -1,0 +1,105 @@
+.tk {
+  --ink: var(--on-night); --mut: var(--on-night-muted); --line: rgba(238, 242, 248, 0.14);
+  --field: rgba(255, 255, 255, 0.08);
+  --crit: var(--ember); --high: #f2a33a; --med: #e6cf5a; --low: #7f93ad;
+  position: relative; isolation: isolate; min-height: 100svh; color: var(--ink);
+  font: 14px/1.5 var(--body); color-scheme: dark; background: var(--night);
+}
+.tk__bg { position: fixed; inset: 0; z-index: -1; }
+.tk__bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 40%, rgba(12, 20, 40, 0.15), rgba(12, 20, 40, 0.7)); pointer-events: none; }
+
+.tk header {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 12px clamp(12px, 3vw, 28px);
+  position: sticky; top: 0; z-index: 5; background: rgba(12, 20, 40, 0.55);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line);
+}
+.tk__back { color: var(--ink); text-underline-offset: 4px; margin-right: 10px; font-weight: 500; }
+.tk .msg { color: #ffb59f; font-size: 12.5px; }
+
+.tk main {
+  display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); gap: clamp(16px, 4vw, 56px);
+  padding: clamp(16px, 4vw, 48px) clamp(14px, 4vw, 56px) 96px; max-width: 1280px; margin: auto; align-items: start;
+}
+.tk aside { position: sticky; top: 84px; }
+.tk__word { width: 100%; height: clamp(90px, 14vh, 130px); margin-bottom: 14px; color: #fff; font-family: var(--display); }
+@media (max-width: 820px) {
+  .tk main { grid-template-columns: 1fr; }
+  .tk aside { position: static; }
+}
+
+/* ---------- reflective card ---------- */
+.tk__stage { perspective: 1200px; min-width: 0; }
+.rcard {
+  --mx: 30%; --my: 0%; --rx: 0deg; --ry: 0deg;
+  position: relative; max-width: 800px; border-radius: 26px; padding: clamp(18px, 3vw, 32px);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04) 38%, rgba(12, 20, 40, 0.58));
+  border: 1px solid rgba(238, 242, 248, 0.18);
+  backdrop-filter: blur(20px) saturate(1.25); -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  box-shadow: 0 34px 60px -34px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 0 44px rgba(79, 139, 255, 0.06);
+  transform: rotateX(var(--ry)) rotateY(var(--rx)); transition: transform 0.3s ease-out;
+  animation: rcard-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes rcard-in { from { opacity: 0; transform: translateY(18px) scale(0.985); } }
+.rcard__glass { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.rcard__glass::before {
+  content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.35s ease;
+  background: radial-gradient(360px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.2), transparent 62%);
+}
+.rcard:hover .rcard__glass::before { opacity: 1; }
+.rcard__glass::after {
+  content: ''; position: absolute; inset: -20% -60%;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.2) 49%, transparent 58%);
+  transform: translateX(-70%); animation: rcard-sweep 1.4s 0.15s cubic-bezier(0.3, 0.6, 0.2, 1) forwards;
+}
+@keyframes rcard-sweep { to { transform: translateX(70%); opacity: 0; } }
+.rcard__reflection {
+  position: absolute; left: 7%; right: 7%; top: calc(100% + 4px); height: 64px; pointer-events: none;
+  border-radius: 0 0 26px 26px; filter: blur(7px); opacity: 0.55;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.16), transparent);
+}
+.rcard__title, .rcard__body { position: relative; }
+.rcard__type { width: 100%; height: clamp(60px, 9vh, 84px); color: #fff; font-family: var(--display); margin-bottom: 24px; }
+@media (prefers-reduced-motion: reduce) {
+  .rcard { animation: none; transition: none; }
+  .rcard__glass::after { animation: none; opacity: 0; }
+}
+
+/* ---------- content inside the card ---------- */
+.tk h2 { font: 700 17px/1.2 var(--display); letter-spacing: -0.01em; margin: 0 0 12px; }
+.tk p { margin: 8px 0; }
+.tk input, .tk select, .tk textarea {
+  font: inherit; padding: 8px 10px; color: var(--ink); background: var(--field);
+  border: 1px solid var(--line); border-radius: 10px; min-width: 0;
+}
+.tk input::placeholder, .tk textarea::placeholder { color: rgba(238, 242, 248, 0.45); }
+.tk button:not(.specular-button):not(.branched-menu button) {
+  font: inherit; padding: 7px 12px; border-radius: 10px; cursor: pointer; color: var(--ink);
+  background: var(--field); border: 1px solid rgba(238, 242, 248, 0.22);
+}
+.tk button:not(.specular-button):not(.branched-menu button):hover { background: rgba(255, 255, 255, 0.14); }
+.tk :focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.tk .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; align-items: center; }
+.tk .row > * { flex: 1; min-width: 100px; }
+.tk .row > .specular-button { flex: 0 0 auto; }
+.tk .cta { margin-top: 10px; }
+.tk .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; margin-bottom: 10px; }
+@media (max-width: 520px) { .tk .stats { grid-template-columns: repeat(2, 1fr); } }
+.tk .stats > div { background: var(--field); border: 1px solid var(--line); border-radius: 14px; padding: 12px 4px; }
+.tk .stats b { display: block; font: 700 30px/1.1 var(--display); letter-spacing: -0.02em; }
+.tk .stats > div:nth-child(2) b { color: var(--ember); }
+.tk .stats span, .tk .mut { color: var(--mut); font-size: 12.5px; }
+.tk .inc {
+  padding: 10px 12px; margin-bottom: 8px; border-radius: 12px; border: 1px solid var(--line);
+  border-left: 4px solid var(--low); background: rgba(255, 255, 255, 0.04); cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.tk .inc:hover { background: rgba(255, 255, 255, 0.1); transform: translateX(2px); }
+.tk .inc.critical { border-left-color: var(--crit); }
+.tk .inc.high { border-left-color: var(--high); }
+.tk .inc.medium { border-left-color: var(--med); }
+.tk .tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); }
+.tk .tl { border-left: 2px solid var(--line); padding: 0 0 12px 14px; margin-left: 4px; position: relative; }
+.tk .tl::before { content: ''; position: absolute; left: -5px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--signal); }
+.tk .tl time { color: var(--mut); font-size: 12.5px; }
+.tk .sus { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.tk .score { font: 700 24px/1 var(--display); min-width: 44px; color: var(--ember); }
