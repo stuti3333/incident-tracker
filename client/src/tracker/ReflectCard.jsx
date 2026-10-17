@@ -3,11 +3,9 @@ import TechText from '../components/TechText.jsx';
 
 const FONT = "'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif";
 
-// Glass card with a cursor-following sheen, a gentle tilt, a one-off light sweep
-// on mount and a soft reflection underneath. Remount it (key) to replay the entrance.
 export default function ReflectCard({ title, children }) {
   const ref = useRef(null);
-  const move = e => {
+  const move = (e) => {
     const el = ref.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
@@ -25,7 +23,12 @@ export default function ReflectCard({ title, children }) {
     el.style.setProperty('--ry', '0deg');
   };
   return (
-    <div className="rcard" ref={ref} onPointerMove={move} onPointerLeave={leave}>
+    <div
+      className="rcard"
+      ref={ref}
+      onPointerMove={move}
+      onPointerLeave={leave}
+    >
       <div className="rcard__glass" aria-hidden="true" />
       <div className="rcard__title">
         <h2 className="sr-only">{title}</h2>

@@ -6,24 +6,28 @@ import GetStarted from './sections/GetStarted.jsx';
 import Tail from './sections/Tail.jsx';
 import Tracker from './tracker/Tracker.jsx';
 
-const routeOf = () => (window.location.hash.startsWith('#/tracker') ? 'tracker' : 'home');
+const routeOf = () =>
+  window.location.hash.startsWith('#/tracker') ? 'tracker' : 'home';
 
 export default function App() {
   const [route, setRoute] = useState(routeOf);
 
-  const navigate = useCallback(next => {
-    setRoute(prev => {
+  const navigate = useCallback((next) => {
+    setRoute((prev) => {
       if (prev !== next) window.scrollTo(0, 0);
       return next;
     });
     try {
-      window.history.replaceState(null, '', next === 'tracker' ? '#/tracker' : '#/');
+      window.history.replaceState(
+        null,
+        '',
+        next === 'tracker' ? '#/tracker' : '#/',
+      );
     } catch {
       /* sandboxed frames may refuse; state above still switches the page */
     }
   }, []);
 
-  // browser back/forward and typed hashes
   useEffect(() => {
     const onHash = () => setRoute(routeOf());
     window.addEventListener('hashchange', onHash);

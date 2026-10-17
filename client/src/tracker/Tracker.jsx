@@ -6,22 +6,28 @@ import BranchedMenu from '../components/BranchedMenu.jsx';
 import ReflectCard from './ReflectCard.jsx';
 import './tracker.css';
 
-const fmt = t => new Date(t).toLocaleString();
-const iso = v => (v ? new Date(v).toISOString() : undefined);
+const fmt = (t) => new Date(t).toLocaleString();
+const iso = (v) => (v ? new Date(v).toISOString() : undefined);
 const SEVERITIES = ['low', 'medium', 'high', 'critical'];
 const STATUSES = ['open', 'investigating', 'mitigated', 'resolved'];
 const FONT = "'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif";
 const MENU = [
   { label: 'Overview', value: 'dashboard' },
-  { label: 'Report', children: [{ value: 'report', label: 'Report incident' }, { value: 'deploy', label: 'Record deployment' }] },
+  {
+    label: 'Report',
+    children: [
+      { value: 'report', label: 'Report incident' },
+      { value: 'deploy', label: 'Record deployment' },
+    ],
+  },
   {
     label: 'Incidents',
     children: [
       { value: 'incidents', label: 'All incidents' },
       { value: 'detail', label: 'Selected incident' },
-      { value: 'timeline', label: 'Timeline' }
-    ]
-  }
+      { value: 'timeline', label: 'Timeline' },
+    ],
+  },
 ];
 
 export default function Tracker({ onHome }) {
@@ -38,7 +44,6 @@ export default function Tracker({ onHome }) {
   const [cur, setCur] = useState(null);
   const [detail, setDetail] = useState(null);
 
-  // report / deployment forms
   const [it, setIt] = useState('');
   const [is, setIs] = useState('medium');
   const [isv, setIsv] = useState('');
@@ -48,7 +53,6 @@ export default function Tracker({ onHome }) {
   const [dst, setDst] = useState('succeeded');
   const [dt, setDt] = useState('');
 
-  // always-current copies for callbacks that outlive a render (SSE handlers)
   const auth = useRef({ token, user });
   auth.current = { token, user };
 
@@ -60,9 +64,9 @@ export default function Tracker({ onHome }) {
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'Bearer ' + auth.current.token,
-          'X-User': auth.current.user || 'anon'
+          'X-User': auth.current.user || 'anon',
         },
-        body: opts.body && JSON.stringify(opts.body)
+        body: opts.body && JSON.stringify(opts.body),
       });
     } catch {
       const e = new Error('Cannot reach the server. Is the API running?');
@@ -80,19 +84,25 @@ export default function Tracker({ onHome }) {
     return j;
   }, []);
 
-  const loadProjects = useCallback(async select => {
-    const ps = await api('/projects');
-    setProjects(ps);
-    setPid(prev => {
-      if (select != null) return String(select);
-      if (prev && ps.some(p => String(p.id) === prev)) return prev;
-      return ps.length ? String(ps[0].id) : '';
-    });
-  }, [api]);
+  const loadProjects = useCallback(
+    async (select) => {
+      const ps = await api('/projects');
+      setProjects(ps);
+      setPid((prev) => {
+        if (select != null) return String(select);
+        if (prev && ps.some((p) => String(p.id) === prev)) return prev;
+        return ps.length ? String(ps[0].id) : '';
+      });
+    },
+    [api],
+  );
 
-  const loadDetail = useCallback(async id => {
-    setDetail(await api('/incidents/' + id));
-  }, [api]);
+  const loadDetail = useCallback(
+    async (id) => {
+      setDetail(await api('/incidents/' + id));
+    },
+    [api],
+  );
 
   const curRef = useRef(null);
   curRef.current = cur;
@@ -102,7 +112,7 @@ export default function Tracker({ onHome }) {
     const [d, l, t] = await Promise.all([
       api(`/projects/${pid}/dashboard`),
       api(`/projects/${pid}/incidents`),
-      api(`/projects/${pid}/timeline`)
+      api(`/projects/${pid}/timeline`),
     ]);
     setDash(d);
     setList(l);
@@ -124,21 +134,22 @@ export default function Tracker({ onHome }) {
   useEffect(() => {
     if (!pid) return undefined;
     const es = new EventSource(`/api/projects/${pid}/stream?token=${token}`);
-    ['deployment', 'change', 'incident'].forEach(t => es.addEventListener(t, () => loadRef.current().catch(() => {})));
+    ['deployment', 'change', 'incident'].forEach((t) =>
+      es.addEventListener(t, () => loadRef.current().catch(() => {})),
+    );
     return () => es.close();
   }, [pid, token]);
 
-  const pickProject = id => {
+  const pickProject = (id) => {
     setPid(id);
     setCur(null);
     setDetail(null);
   };
-  // jumping to a panel from code (not from the menu) remounts the menu so its marker follows
-  const goto = v => {
+  const goto = (v) => {
     setPanel(v);
-    setMenuKey(k => k + 1);
+    setMenuKey((k) => k + 1);
   };
-  const open = id => {
+  const open = (id) => {
     setCur(id);
     loadDetail(id).catch(() => {});
     goto('detail');
@@ -161,10 +172,11 @@ export default function Tracker({ onHome }) {
     try {
       const r = await api(`/projects/${pid}/incidents`, {
         method: 'POST',
-        body: { title: it, severity: is, service: isv, started_at: iso(ist) }
+        body: { title: it, severity: is, service: isv, started_at: iso(ist) },
       });
       setIt('');
-      if (r.duplicate) setMsg('Already tracked: merged into the open incident.');
+      if (r.duplicate)
+        setMsg('Already tracked: merged into the open incident.');
       load();
     } catch {}
   };
@@ -175,7 +187,7 @@ export default function Tracker({ onHome }) {
     try {
       await api(`/projects/${pid}/deployments`, {
         method: 'POST',
-        body: { version: dv, service: dsv, status: dst, deployed_at: iso(dt) }
+        body: { version: dv, service: dsv, status: dst, deployed_at: iso(dt) },
       });
       setDv('');
       load();
@@ -190,78 +202,154 @@ export default function Tracker({ onHome }) {
     report: 'Report incident',
     deploy: 'Record deployment',
     incidents: 'Incidents',
-    detail: detail ? `Incident #${detail.incident.id}` : 'Select an incident'
+    detail: detail ? `Incident #${detail.incident.id}` : 'Select an incident',
   };
 
   const panels = {
     dashboard: s ? (
       <>
         <div className="stats">
-          <div><b>{s.open}</b><span>open</span></div>
-          <div><b>{s.critical}</b><span>critical</span></div>
-          <div><b>{s.total}</b><span>total</span></div>
-          <div><b>{s.mttr_min ?? '–'}</b><span>MTTR min</span></div>
+          <div>
+            <b>{s.open}</b>
+            <span>open</span>
+          </div>
+          <div>
+            <b>{s.critical}</b>
+            <span>critical</span>
+          </div>
+          <div>
+            <b>{s.total}</b>
+            <span>total</span>
+          </div>
+          <div>
+            <b>{s.mttr_min ?? '–'}</b>
+            <span>MTTR min</span>
+          </div>
         </div>
-        <p className="mut">Deploys, 7 days: {dash.deploymentsLast7d.map(x => x.n + ' ' + x.status).join(', ') || 'none'}</p>
+        <p className="mut">
+          Deploys, 7 days:{' '}
+          {dash.deploymentsLast7d.map((x) => x.n + ' ' + x.status).join(', ') ||
+            'none'}
+        </p>
         <p>
           <b>Recurring:</b>{' '}
-          {dash.recurring.length ? dash.recurring.map(r => `${r.title} (×${r.n})`).join('; ') : <span className="mut">none yet</span>}
+          {dash.recurring.length ? (
+            dash.recurring.map((r) => `${r.title} (×${r.n})`).join('; ')
+          ) : (
+            <span className="mut">none yet</span>
+          )}
         </p>
         <p>
           <b>Most-implicated deploys:</b>{' '}
-          {dash.deploymentsLinkedToIncidents.length
-            ? dash.deploymentsLinkedToIncidents.map(r => `${r.version} (${r.n})`).join('; ')
-            : <span className="mut">none linked</span>}
+          {dash.deploymentsLinkedToIncidents.length ? (
+            dash.deploymentsLinkedToIncidents
+              .map((r) => `${r.version} (${r.n})`)
+              .join('; ')
+          ) : (
+            <span className="mut">none linked</span>
+          )}
         </p>
       </>
     ) : (
-      <p className="mut">{pid ? 'Loading…' : projects.length ? 'Pick a project.' : 'No project yet. Use “New project” in the top bar to create one.'}</p>
+      <p className="mut">
+        {pid
+          ? 'Loading…'
+          : projects.length
+            ? 'Pick a project.'
+            : 'No project yet. Use “New project” in the top bar to create one.'}
+      </p>
     ),
     report: (
       <>
-        <input placeholder="What is failing?" style={{ width: '100%' }} value={it} onChange={e => setIt(e.target.value)} />
+        <input
+          placeholder="What is failing?"
+          style={{ width: '100%' }}
+          value={it}
+          onChange={(e) => setIt(e.target.value)}
+        />
         <div className="row">
-          <select value={is} onChange={e => setIs(e.target.value)}>
-            {SEVERITIES.map(v => <option key={v}>{v}</option>)}
+          <select value={is} onChange={(e) => setIs(e.target.value)}>
+            {SEVERITIES.map((v) => (
+              <option key={v}>{v}</option>
+            ))}
           </select>
-          <input placeholder="Service" value={isv} onChange={e => setIsv(e.target.value)} />
+          <input
+            placeholder="Service"
+            value={isv}
+            onChange={(e) => setIsv(e.target.value)}
+          />
         </div>
         <div className="row">
-          <input type="datetime-local" title="When it started (leave empty for now)" value={ist} onChange={e => setIst(e.target.value)} />
+          <input
+            type="datetime-local"
+            title="When it started (leave empty for now)"
+            value={ist}
+            onChange={(e) => setIst(e.target.value)}
+          />
         </div>
-        <div className="cta"><SpecularButton size="md" radius={14} onClick={report}>Report</SpecularButton></div>
+        <div className="cta">
+          <SpecularButton size="md" radius={14} onClick={report}>
+            Report
+          </SpecularButton>
+        </div>
       </>
     ),
     deploy: (
       <>
         <div className="row">
-          <input placeholder="Version" value={dv} onChange={e => setDv(e.target.value)} />
-          <input placeholder="Service" value={dsv} onChange={e => setDsv(e.target.value)} />
+          <input
+            placeholder="Version"
+            value={dv}
+            onChange={(e) => setDv(e.target.value)}
+          />
+          <input
+            placeholder="Service"
+            value={dsv}
+            onChange={(e) => setDsv(e.target.value)}
+          />
         </div>
         <div className="row">
-          <select value={dst} onChange={e => setDst(e.target.value)}>
-            {['succeeded', 'failed', 'rolled_back', 'pending'].map(v => <option key={v}>{v}</option>)}
+          <select value={dst} onChange={(e) => setDst(e.target.value)}>
+            {['succeeded', 'failed', 'rolled_back', 'pending'].map((v) => (
+              <option key={v}>{v}</option>
+            ))}
           </select>
-          <input type="datetime-local" title="Leave empty if unknown" value={dt} onChange={e => setDt(e.target.value)} />
+          <input
+            type="datetime-local"
+            title="Leave empty if unknown"
+            value={dt}
+            onChange={(e) => setDt(e.target.value)}
+          />
         </div>
-        <div className="cta"><SpecularButton size="md" radius={14} onClick={record}>Record deployment</SpecularButton></div>
+        <div className="cta">
+          <SpecularButton size="md" radius={14} onClick={record}>
+            Record deployment
+          </SpecularButton>
+        </div>
       </>
     ),
     incidents: list.length ? (
-      list.map(i => (
+      list.map((i) => (
         <div
           key={i.id}
           className={`inc ${i.severity}`}
           tabIndex={0}
           role="button"
           onClick={() => open(i.id)}
-          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), open(i.id))}
+          onKeyDown={(e) =>
+            (e.key === 'Enter' || e.key === ' ') &&
+            (e.preventDefault(), open(i.id))
+          }
         >
-          <b>#{i.id} {i.title}</b>
+          <b>
+            #{i.id} {i.title}
+          </b>
           <br />
-          <span className="tag">{i.severity}</span> <span className="tag">{i.status}</span>{' '}
+          <span className="tag">{i.severity}</span>{' '}
+          <span className="tag">{i.status}</span>{' '}
           <span className="mut">
-            {i.service || ''} {i.assignee ? '→ ' + i.assignee : ''} {i.report_count > 1 ? '· ' + i.report_count + ' reports' : ''}
+            {i.service || ''} {i.assignee ? '→ ' + i.assignee : ''}{' '}
+            {i.report_count > 1 ? '· ' + i.report_count + ' reports' : ''}
           </span>
         </div>
       ))
@@ -278,14 +366,22 @@ export default function Tracker({ onHome }) {
         reloadAll={load}
       />
     ) : (
-      <p className="mut">Pick one from All incidents to see suspect deployments, updates, and edit status.</p>
+      <p className="mut">
+        Pick one from All incidents to see suspect deployments, updates, and
+        edit status.
+      </p>
     ),
     timeline: tl.length ? (
-      tl.map(e => (
-        <div className="tl" key={e.id ?? `${e.kind}:${e.ref_id}:${e.occurred_at}`}>
+      tl.map((e) => (
+        <div
+          className="tl"
+          key={e.id ?? `${e.kind}:${e.ref_id}:${e.occurred_at}`}
+        >
           <time>
             {fmt(e.occurred_at)}
-            {new Date(e.received_at) - new Date(e.occurred_at) > 6e4 ? ' (logged late)' : ''}
+            {new Date(e.received_at) - new Date(e.occurred_at) > 6e4
+              ? ' (logged late)'
+              : ''}
           </time>
           <br />
           {e.title}
@@ -293,7 +389,7 @@ export default function Tracker({ onHome }) {
       ))
     ) : (
       <p className="mut">No events yet.</p>
-    )
+    ),
   };
 
   return (
@@ -316,20 +412,47 @@ export default function Tracker({ onHome }) {
         />
       </div>
       <header>
-        <a className="tk__back" href="#/" onClick={e => { e.preventDefault(); onHome?.(); }}>← Home</a>
-        <select aria-label="Project" value={pid} onChange={e => pickProject(e.target.value)}>
-          {projects.map(p => (
-            <option key={p.id} value={p.id}>{p.name}</option>
+        <a
+          className="tk__back"
+          href="#/"
+          onClick={(e) => {
+            e.preventDefault();
+            onHome?.();
+          }}
+        >
+          ← Home
+        </a>
+        <select
+          aria-label="Project"
+          value={pid}
+          onChange={(e) => pickProject(e.target.value)}
+        >
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
           ))}
         </select>
         <button onClick={newProject}>New project</button>
-        <select aria-label="Role" value={token} onChange={e => setToken(e.target.value)}>
+        <select
+          aria-label="Role"
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+        >
           <option value="admin-token">admin</option>
           <option value="dev-token">developer</option>
           <option value="view-token">viewer</option>
         </select>
-        <input aria-label="Your name" placeholder="Your name" value={user} onChange={e => setUser(e.target.value)} style={{ maxWidth: 130 }} />
-        <span className="msg" role="status">{msg}</span>
+        <input
+          aria-label="Your name"
+          placeholder="Your name"
+          value={user}
+          onChange={(e) => setUser(e.target.value)}
+          style={{ maxWidth: 130 }}
+        />
+        <span className="msg" role="status">
+          {msg}
+        </span>
       </header>
       <main>
         <aside>
@@ -354,7 +477,7 @@ export default function Tracker({ onHome }) {
             items={MENU}
             defaultOpen={[1, 2]}
             defaultActive={panel}
-            onSelect={v => setPanel(v)}
+            onSelect={(v) => setPanel(v)}
             color="#eef2f8"
             accentColor="#ff6a3d"
             lineColor="#33415f"
@@ -385,55 +508,94 @@ function IncidentDetail({ data, api, setMsg, reload, reloadAll }) {
     try {
       await api('/incidents/' + i.id, {
         method: 'PATCH',
-        body: { version: i.version, status, severity, assignee: assignee || null, resolution: resolution || null }
+        body: {
+          version: i.version,
+          status,
+          severity,
+          assignee: assignee || null,
+          resolution: resolution || null,
+        },
       });
       reloadAll();
     } catch (e) {
       if (e.res?.current) {
         await reload().catch(() => {});
-        setMsg('Someone else edited this incident. Showing the latest version.');
+        setMsg(
+          'Someone else edited this incident. Showing the latest version.',
+        );
       }
     }
   };
   const post = async () => {
     if (!comment) return;
     try {
-      await api(`/incidents/${i.id}/updates`, { method: 'POST', body: { body: comment } });
+      await api(`/incidents/${i.id}/updates`, {
+        method: 'POST',
+        body: { body: comment },
+      });
       setComment('');
       reload();
     } catch {}
   };
-  const link = async id => {
+  const link = async (id) => {
     try {
-      await api(`/incidents/${i.id}/links`, { method: 'POST', body: { deployment_id: id } });
+      await api(`/incidents/${i.id}/links`, {
+        method: 'POST',
+        body: { deployment_id: id },
+      });
       reload();
     } catch {}
   };
 
   return (
     <>
-      <p><b>{i.title}</b></p>
-      <p className="mut">Started {fmt(i.started_at)} · reported {fmt(i.reported_at)} · v{i.version}</p>
+      <p>
+        <b>{i.title}</b>
+      </p>
+      <p className="mut">
+        Started {fmt(i.started_at)} · reported {fmt(i.reported_at)} · v
+        {i.version}
+      </p>
       <div className="row">
-        <select value={status} onChange={e => setStatus(e.target.value)}>
-          {STATUSES.map(v => <option key={v}>{v}</option>)}
+        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+          {STATUSES.map((v) => (
+            <option key={v}>{v}</option>
+          ))}
         </select>
-        <select value={severity} onChange={e => setSeverity(e.target.value)}>
-          {SEVERITIES.map(v => <option key={v}>{v}</option>)}
+        <select value={severity} onChange={(e) => setSeverity(e.target.value)}>
+          {SEVERITIES.map((v) => (
+            <option key={v}>{v}</option>
+          ))}
         </select>
-        <input placeholder="Assignee" value={assignee} onChange={e => setAssignee(e.target.value)} />
+        <input
+          placeholder="Assignee"
+          value={assignee}
+          onChange={(e) => setAssignee(e.target.value)}
+        />
       </div>
-      <textarea placeholder="Resolution details" rows={2} style={{ width: '100%' }} value={resolution} onChange={e => setResolution(e.target.value)} />
-      <div className="cta"><SpecularButton size="sm" radius={12} onClick={save}>Save changes</SpecularButton></div>
+      <textarea
+        placeholder="Resolution details"
+        rows={2}
+        style={{ width: '100%' }}
+        value={resolution}
+        onChange={(e) => setResolution(e.target.value)}
+      />
+      <div className="cta">
+        <SpecularButton size="sm" radius={12} onClick={save}>
+          Save changes
+        </SpecularButton>
+      </div>
 
       <h2 style={{ marginTop: 14 }}>Suspect deployments</h2>
       {data.suspects.length ? (
-        data.suspects.map(s => (
+        data.suspects.map((s) => (
           <div className="sus" key={s.deployment.id}>
             <span className="score">{s.score}</span>
             <div style={{ flex: 1 }}>
               <b>{s.deployment.version}</b>{' '}
-              <span className="mut">{s.deployment.service || ''} · {s.deployment.status}</span>
+              <span className="mut">
+                {s.deployment.service || ''} · {s.deployment.status}
+              </span>
               <br />
               <span className="mut">{s.reasons.join(' · ')}</span>
             </div>
@@ -445,11 +607,15 @@ function IncidentDetail({ data, api, setMsg, reload, reloadAll }) {
       )}
       <p>
         <b>Linked:</b>{' '}
-        {data.links.length ? data.links.map(l => l.version || l.sha?.slice(0, 7)).join(', ') : <span className="mut">none</span>}
+        {data.links.length ? (
+          data.links.map((l) => l.version || l.sha?.slice(0, 7)).join(', ')
+        ) : (
+          <span className="mut">none</span>
+        )}
       </p>
 
       <h2>Updates</h2>
-      {data.updates.map(u => (
+      {data.updates.map((u) => (
         <p key={u.id ?? u.created_at}>
           <b>{u.author}</b> <span className="mut">{fmt(u.created_at)}</span>
           <br />
@@ -457,8 +623,15 @@ function IncidentDetail({ data, api, setMsg, reload, reloadAll }) {
         </p>
       ))}
       <div className="row">
-        <input placeholder="Add an update" value={comment} onChange={e => setComment(e.target.value)} onKeyDown={e => e.key === 'Enter' && post()} />
-        <SpecularButton size="sm" radius={12} onClick={post}>Post</SpecularButton>
+        <input
+          placeholder="Add an update"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && post()}
+        />
+        <SpecularButton size="sm" radius={12} onClick={post}>
+          Post
+        </SpecularButton>
       </div>
     </>
   );

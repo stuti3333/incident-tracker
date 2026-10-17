@@ -1,10 +1,8 @@
 import ColorBends from '../components/ColorBends.jsx';
 import Safe from '../components/Safe.jsx';
 
-const COOL = ['#4f8bff', '#22d3ee', '#8a5cff']; // where the story above ends
+const COOL = ['#4f8bff', '#22d3ee', '#8a5cff'];
 
-// One ColorBends layer behind everything below the story. It stays pinned to the
-// screen while the content scrolls over it.
 export default function Tail({ children }) {
   return (
     <div className="tail">

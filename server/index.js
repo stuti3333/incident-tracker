@@ -10,7 +10,6 @@ async function connect() {
   for (let attempt = 1; ; attempt++) {
     try {
       await M.mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
-      // build the unique indexes (dedupe keys, one open incident per failure) before accepting writes
       await Promise.all(
         Object.values(M)
           .filter((m) => m && m.init && m.modelName)
@@ -30,6 +29,5 @@ async function connect() {
   }
 }
 
-// Serve right away so the UI loads and shows a clear message while the database is still coming up.
 createApp().listen(port, () => console.log('listening on :' + port));
 connect();
