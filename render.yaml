@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: incident-tracker
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: TOKENS
+        value: admin-token:admin,dev-token:developer,view-token:viewer
+      - key: GITHUB_WEBHOOK_SECRET
+        value: ""

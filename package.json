@@ -3,7 +3,9 @@
   "version": "2.0.0",
   "description": "MERN incident tracking and deployment monitoring platform",
   "main": "server/index.js",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
@@ -12,7 +14,8 @@
     "client:install": "npm --prefix client install",
     "client:dev": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
-    "build": "npm run client:install && npm run client:build"
+    "build": "npm run client:install && npm run client:build",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "express": "^4.21.2",
