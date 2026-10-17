@@ -52,6 +52,8 @@ export default function Tracker({ onHome }) {
   const [dsv, setDsv] = useState('');
   const [dst, setDst] = useState('succeeded');
   const [dt, setDt] = useState('');
+  const [showNewProject, setShowNewProject] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
 
   const auth = useRef({ token, user });
   auth.current = { token, user };
@@ -156,13 +158,19 @@ export default function Tracker({ onHome }) {
   };
 
   const newProject = async () => {
-    const name = prompt('Project name');
-    if (!name) return;
+    setShowNewProject(true);
+  };
+
+  const createProject = async () => {
+    if (!newProjectName.trim()) return;
     try {
-      const p = await api('/projects', { method: 'POST', body: { name } });
-      setCur(null);
-      setDetail(null);
-      await loadProjects(p.id);
+      await api('/projects', {
+        method: 'POST',
+        body: { name: newProjectName.trim() },
+      });
+      setNewProjectName('');
+      setShowNewProject(false);
+      loadProjects();
     } catch {}
   };
 
@@ -428,12 +436,43 @@ export default function Tracker({ onHome }) {
           onChange={(e) => pickProject(e.target.value)}
         >
           {projects.map((p) => (
-            <option key={p.id} value={p.id}>
+            <option key={p._id} value={p._id}>
               {p.name}
             </option>
           ))}
         </select>
-        <button onClick={newProject}>New project</button>
+        <SpecularButton size="sm" radius={12} onClick={newProject}>
+          New project
+        </SpecularButton>
+        {showNewProject && (
+          <div
+            className="modal-overlay"
+            onClick={() => setShowNewProject(false)}
+          >
+            <ReflectCard title="Create New Project">
+              <input
+                type="text"
+                placeholder="Project name"
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && createProject()}
+                autoFocus
+              />
+              <div className="modal-actions">
+                <SpecularButton
+                  size="sm"
+                  radius={10}
+                  onClick={() => setShowNewProject(false)}
+                >
+                  Cancel
+                </SpecularButton>
+                <SpecularButton size="sm" radius={10} onClick={createProject}>
+                  Create
+                </SpecularButton>
+              </div>
+            </ReflectCard>
+          </div>
+        )}
         <select
           aria-label="Role"
           value={token}
@@ -478,9 +517,9 @@ export default function Tracker({ onHome }) {
             defaultOpen={[1, 2]}
             defaultActive={panel}
             onSelect={(v) => setPanel(v)}
-            color="#eef2f8"
+            color="#ffffff"
             accentColor="#ff6a3d"
-            lineColor="#33415f"
+            lineColor="#1a1a2e"
             width={280}
             rowHeight={38}
             fontSize={15}
